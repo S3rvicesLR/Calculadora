@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calculadora de Apuestas - Cuotas fijas</title>
+    <style>
+        /* ===== ESTILOS ===== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            background: linear-gradient(145deg, #0b1a2e, #1a2f44);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: #ffffff;
+            border-radius: 28px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            max-width: 800px;
+            width: 100%;
+            padding: 30px 28px;
+            transition: 0.3s;
+        }
+
+        h1 {
+            text-align: center;
+            font-weight: 700;
+            font-size: 28px;
+            color: #0b1a2e;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #5b6f82;
+            font-size: 14px;
+            border-bottom: 1px solid #e9edf2;
+            padding-bottom: 18px;
+            margin-bottom: 24px;
+        }
+
+        .configuracion {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px 20px;
+            align-items: flex-end;
+            background: #f4f7fc;
+            border-radius: 16px;
+            padding: 18px 20px;
+            margin-bottom: 28px;
+        }
+
+        .campo {
+            flex: 1 1 160px;
+            min-width: 140px;
+        }
+
+        .campo label {
+            display: block;
+            font-weight: 600;
+            font-size: 13px;
+            color: #1e2f3f;
+            margin-bottom: 4px;
+        }
+
+        .campo input,
+        .campo select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #dce3ec;
+            border-radius: 12px;
+            font-size: 15px;
+            background: white;
+            transition: 0.2s;
+            color: #0b1a2e;
+        }
+
+        .campo input:focus,
+        .campo select:focus {
+            border-color: #2a6fdb;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(42, 111, 219, 0.12);
+        }
+
+        .campo select {
+            appearance: auto;
+            cursor: pointer;
+        }
+
+        .btn-calcular {
+            flex: 0 0 auto;
+            background: #0b1a2e;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 10px 28px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+            height: 44px;
+            min-width: 120px;
+        }
+
+        .btn-calcular:hover {
+            background: #1a2f44;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(11, 26, 46, 0.25);
+        }
+
+        .btn-calcular:active {
+            transform: scale(0.96);
+        }
+
+        /* Tabla de resultados */
+        .tabla-wrapper {
+            overflow-x: auto;
+            border-radius: 14px;
+            border: 1px solid #e9edf2;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            min-width: 480px;
+        }
+
+        thead {
+            background: #0b1a2e;
+            color: white;
+        }
+
+        th {
+            padding: 14px 12px;
+            text-align: center;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        td {
+            padding: 12px 10px;
+            text-align: center;
+            border-bottom: 1px solid #eef2f7;
+            background-color: white;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: #f8fbff;
+        }
+
+        .cuota-badge {
+            font-weight: 700;
+            color: #0b1a2e;
+            background: #eef3fa;
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: inline-block;
+            font-size: 14px;
+        }
+
+        .stake {
+            font-weight: 600;
+            color: #0b3a6b;
+        }
+
+        .retorno {
+            color: #0b6b3a;
+            font-weight: 500;
+        }
+
+        .ganancia {
+            color: #b0680b;
+            font-weight: 500;
+        }
+
+        .total-row td {
+            font-weight: 700;
+            background: #f4f7fc;
+            border-top: 2px solid #d0dae8;
+            padding: 14px 12px;
+        }
+
+        .total-row .label-total {
+            text-align: right;
+            padding-right: 20px;
+            color: #1e2f3f;
+        }
+
+        .total-row .valor-total {
+            color: #0b1a2e;
+            font-size: 16px;
+        }
+
+        .error-msg {
+            color: #b0003a;
+            font-weight: 500;
+            font-size: 14px;
+            margin: 12px 0 0 0;
+            display: none;
+            background: #ffe6ec;
+            padding: 10px 16px;
+            border-radius: 12px;
+        }
+
+        .error-msg.visible {
+            display: block;
+        }
+
+        .info-extra {
+            margin-top: 20px;
+            font-size: 13px;
+            color: #5b6f82;
+            text-align: center;
+            border-top: 1px solid #e9edf2;
+            padding-top: 16px;
+        }
+
+        .info-extra span {
+            font-weight: 600;
+            color: #0b1a2e;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px 14px;
+            }
+            .configuracion {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .btn-calcular {
+                width: 100%;
+                min-width: unset;
+            }
+            table {
+                font-size: 13px;
+                min-width: 360px;
+            }
+            th, td {
+                padding: 10px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎯 Calculadora de Apuestas</h1>
+    <p class="subtitle">Cuotas fijas (1.20 – 1.90) · Calcula el stake necesario en <strong>$</strong></p>
+
+    <!-- Configuración -->
+    <div class="configuracion">
+        <div class="campo">
+            <label for="tipoObjetivo">Objetivo</label>
+            <select id="tipoObjetivo">
+                <option value="ganancia">Ganancia neta deseada</option>
+                <option value="retorno">Retorno total deseado</option>
+            </select>
+        </div>
+        <div class="campo">
+            <label for="montoObjetivo">Monto ($)</label>
+            <input type="number" id="montoObjetivo" placeholder="Ej: 100" min="0.01" step="0.01" value="100">
+        </div>
+        <button class="btn-calcular" id="btnCalcular">Calcular</button>
+    </div>
+
+    <!-- Mensaje de error -->
+    <div class="error-msg" id="errorMsg">⚠️ Ingresa un monto válido mayor que 0.</div>
+
+    <!-- Tabla de resultados -->
+    <div class="tabla-wrapper">
+        <table id="tablaResultados">
+            <thead>
+                <tr>
+                    <th>Cuota</th>
+                    <th>Stake necesario ($)</th>
+                    <th>Retorno total ($)</th>
+                    <th>Ganancia neta ($)</th>
+                </tr>
+            </thead>
+            <tbody id="cuerpoTabla">
+                <!-- Las filas se generan con JavaScript -->
+            </tbody>
+            <tfoot id="pieTabla" style="display: none;">
+                <tr class="total-row">
+                    <td colspan="4" class="label-total">⚡ Totales (si se apuesta en todas)</td>
+                </tr>
+                <tr class="total-row">
+                    <td class="label-total">Suma stakes</td>
+                    <td class="valor-total" id="sumaStakes">—</td>
+                    <td class="valor-total" id="sumaRetornos">—</td>
+                    <td class="valor-total" id="sumaGanancias">—</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <div class="info-extra">
+        <span>💡</span> El <strong>stake</strong> es lo que debes apostar. 
+        Si buscas <strong>ganancia neta</strong>, el retorno incluye el stake. 
+        Si buscas <strong>retorno total</strong>, la ganancia es el retorno menos el stake.
+    </div>
+</div>
+
+<script>
+    // ===== JAVASCRIPT =====
+
+    // Cuotas fijas predefinidas
+    const CUOTAS_FIJAS = [1.20, 1.30, 1.40, 1.50, 1.60, 1.70, 1.80, 1.90];
+
+    // Elementos del DOM
+    const tipoObjetivo = document.getElementById('tipoObjetivo');
+    const montoObjetivo = document.getElementById('montoObjetivo');
+    const btnCalcular = document.getElementById('btnCalcular');
+    const cuerpoTabla = document.getElementById('cuerpoTabla');
+    const pieTabla = document.getElementById('pieTabla');
+    const errorMsg = document.getElementById('errorMsg');
+
+    const sumaStakes = document.getElementById('sumaStakes');
+    const sumaRetornos = document.getElementById('sumaRetornos');
+    const sumaGanancias = document.getElementById('sumaGanancias');
+
+    // ===== FUNCIONES =====
+
+    function calcular() {
+        // Limpiar errores
+        errorMsg.classList.remove('visible');
+
+        // Leer y validar monto
+        const monto = parseFloat(montoObjetivo.value.replace(',', '.'));
+        if (isNaN(monto) || monto <= 0) {
+            errorMsg.textContent = '⚠️ Ingresa un monto válido mayor que 0.';
+            errorMsg.classList.add('visible');
+            cuerpoTabla.innerHTML = '';
+            pieTabla.style.display = 'none';
+            return;
+        }
+
+        const esGanancia = tipoObjetivo.value === 'ganancia';
+
+        // Generar filas
+        let filasHTML = '';
+        let sumaStake = 0;
+        let sumaRetorno = 0;
+        let sumaGanancia = 0;
+
+        CUOTAS_FIJAS.forEach(cuota => {
+            let stake, retorno, ganancia;
+
+            if (esGanancia) {
+                // Objetivo = ganancia neta deseada
+                ganancia = monto;
+                stake = ganancia / (cuota - 1);
+                retorno = stake + ganancia;
+            } else {
+                // Objetivo = retorno total deseado
+                retorno = monto;
+                stake = retorno / cuota;
+                ganancia = retorno - stake;
+            }
+
+            // Redondear a 2 decimales
+            stake = Math.round(stake * 100) / 100;
+            retorno = Math.round(retorno * 100) / 100;
+            ganancia = Math.round(ganancia * 100) / 100;
+
+            sumaStake += stake;
+            sumaRetorno += retorno;
+            sumaGanancia += ganancia;
+
+            filasHTML += `
+                <tr>
+                    <td><span class="cuota-badge">${cuota.toFixed(2)}x</span></td>
+                    <td class="stake">${stake.toFixed(2)} $</td>
+                    <td class="retorno">${retorno.toFixed(2)} $</td>
+                    <td class="ganancia">${ganancia.toFixed(2)} $</td>
+                </tr>
+            `;
+        });
+
+        // Redondear totales
+        sumaStake = Math.round(sumaStake * 100) / 100;
+        sumaRetorno = Math.round(sumaRetorno * 100) / 100;
+        sumaGanancia = Math.round(sumaGanancia * 100) / 100;
+
+        // Insertar filas
+        cuerpoTabla.innerHTML = filasHTML;
+
+        // Mostrar pie de tabla con totales
+        pieTabla.style.display = 'table-footer-group';
+        sumaStakes.textContent = sumaStake.toFixed(2) + ' $';
+        sumaRetornos.textContent = sumaRetorno.toFixed(2) + ' $';
+        sumaGanancias.textContent = sumaGanancia.toFixed(2) + ' $';
+
+        // Ocultar error si estaba visible
+        errorMsg.classList.remove('visible');
+    }
+
+    // ===== EVENTOS =====
+
+    btnCalcular.addEventListener('click', calcular);
+
+    // Calcular al presionar Enter en el campo monto
+    montoObjetivo.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            calcular();
+        }
+    });
+
+    // Calcular al cambiar el tipo de objetivo
+    tipoObjetivo.addEventListener('change', calcular);
+
+    // ===== INICIALIZAR =====
+    // Calcular con valores por defecto al cargar la página
+    window.addEventListener('DOMContentLoaded', calcular);
+</script>
+
+</body>
+</html>
